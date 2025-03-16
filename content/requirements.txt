@@ -1,0 +1,15 @@
+eventlet
+flask
+flask-socketio
+flask-sqlalchemy
+qiskit
+torch
+transformers
+langchain
+faiss-cpu
+speechrecognition
+pyttsx3
+sklearn
+numpy
+opencv-python
+cryptography

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Epic AI: Unifier of Nations</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Epic AI: Bridging Kurds and America</h1>
+    <div id="chat"></div>
+    <select id="lang">
+        <option value="en">English</option>
+        <option value="tr">Türkçe</option>
+    </select>
+    <input id="message" type="text" placeholder="Type your message...">
+    <button onclick="sendMessage()">Send</button>
+    <input type="file" id="audio" accept="audio/*">
+    <button onclick="sendVoice()">Send Voice</button>
+    <input type="file" id="image" accept="image/*">
+    <button onclick="sendImage()">Send Image</button>
+
+    <script>
+        const socket = io();
+        socket.on("connect", () => console.log("Connected"));
+        socket.on("receive_message", (data) => {
+            const chat = document.getElementById("chat");
+            chat.innerHTML += `<p><strong>${data.sentiment}</strong> (${data.lang}): ${data.message} (${data.timestamp})</p>`;
+            chat.scrollTop = chat.scrollHeight;
+        });
+        socket.on("error", (data) => alert(data.message));
+
+        function sendMessage() {
+            const message = document.getElementById("message").value;
+            const lang = document.getElementById("lang").value;
+            socket.emit("send_message", { message, lang });
+            document.getElementById("message").value = "";
+        }
+
+        function sendVoice() {
+            const audio = document.getElementById("audio").files[0];
+            if (!audio) return;
+            const formData = new FormData();
+            formData.append("audio", audio);
+            fetch("/api/voice", { method: "POST", body: formData })
+                .then(res => res.json())
+                .then(data => document.getElementById("chat").innerHTML += `<p>Voice: ${data.response}</p>`);
+        }
+
+        function sendImage() {
+            const image = document.getElementById("image").files[0];
+            if (!image) return;
+            const lang = document.getElementById("lang").value;
+            const reader = new FileReader();
+            reader.onload = () => {
+                socket.emit("send_message", { message: `image ${image.name}`, lang });
+            };
+            reader.readAsDataURL(image);
+        }
+    </script>
+</body>
+</html>
